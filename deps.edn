@@ -1,0 +1,58 @@
+{:paths ["src" "resources"]
+ :mvn/repos {"central" {:url "https://repo1.maven.org/maven2/"}
+             "clojars" {:url "https://repo.clojars.org/"}}
+ :deps {org.clojure/clojure         {:mvn/version "1.10.1"}
+        clojure-humanize/clojure-humanize {:mvn/version "0.2.2"}
+        org.clojure/java.jdbc       {:mvn/version "0.7.11"}
+        org.postgresql/postgresql   {:mvn/version "42.2.9.jre7"}
+        clj-yaml/clj-yaml           {:mvn/version "0.4.0"}
+        org.clojure/data.csv        {:mvn/version "0.1.4"}
+        clj-time/clj-time           {:mvn/version "0.15.1"}
+        http-kit/http-kit           {:mvn/version "2.5.0"}
+        clj-http/clj-http           {:mvn/version "3.10.3"}
+        com.zaxxer/HikariCP         {:mvn/version "3.3.1"}
+        net.mikera/core.matrix      {:mvn/version "0.62.0"}
+        honeysql/honeysql           {:mvn/version "0.9.8"}
+        cheshire/cheshire           {:mvn/version "5.9.0"}
+        org.clojure/tools.logging   {:mvn/version "1.1.0"}
+        com.health-samurai/jute     {:mvn/version "0.2.0-SNAPSHOT"}
+        }
+ :aliases
+ {:test
+  {:extra-paths ["test"]
+   :extra-deps {healthsamurai/matcho {:mvn/version "0.3.7"}}}
+
+  :kaocha
+  {:extra-deps {lambdaisland/kaocha {:mvn/version "1.0-612"}}
+   :extra-paths ["runner" "test" "test-resources"]
+   :jvm-opts   [ "-Xmx2048m"]
+   :main-opts   ["-m" "kaocha.runner" "--config-file" "test/test.edn"]}
+
+  :nrepl
+  {:extra-deps {cider/cider-nrepl {:mvn/version "0.25.5"}
+                refactor-nrepl/refactor-nrepl {:mvn/version "2.5.0"}}
+   :main-opts  ["-m"           "nrepl.cmdline"
+                "--middleware" "[cider.nrepl/cider-middleware]"
+                "--port"       "6464"]
+   :jvm-opts   [ "-Xmx2048m"]}
+
+  :runner
+  {:extra-deps {com.cognitect/test-runner
+                {:git/url "https://github.com/cognitect-labs/test-runner"
+                 :sha "b6b3193fcc42659d7e46ecd1884a228993441182"}}
+   :main-opts ["-m" "cognitect.test-runner"
+               "-d" "test"]}
+
+  :build
+  {:extra-deps {cambada/cambada {:git/url "https://github.com/HealthSamurai/cambada"
+                                 :sha     "e44a0bebd039285f3e10f15f5703d6eaf92672c7"}}
+   :main-opts  ["-m" "cambada.uberjar"
+                "-m" "app.core"
+                "--app-group-id" "aidbox-ts"
+                "--app-artifact-id" "aidbox-ts"]
+   :jvm-opts   [ "-Xmx2048m"]}
+
+  :uberjar
+  {:extra-deps {seancorfield/depstar {:mvn/version "1.1.128"}}
+   :main-opts ["-m" "hf.depstar.uberjar" "app.jar"
+               "-C" "-m" "app.core"]}}}

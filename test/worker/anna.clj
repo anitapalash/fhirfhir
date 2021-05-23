@@ -1,5 +1,9 @@
 (ns worker.anna
-  (:require [utils :as utils]))
+  (:require [utils :as utils]
+            [clojure.string :as str])
+  (:import
+   [java.security MessageDigest]
+   [java.math BigInteger]))
 
 (def task
   {:resourceType "Patient"          ;; Target resource type
@@ -31,6 +35,27 @@
                                   :secret "secret"  ;; Basic Auth client secret
                                   }}}}})
 
+(defn md5 [s & [salt]]
+  (let [algorithm (MessageDigest/getInstance "MD5")
+        raw (.digest algorithm (.getBytes (str salt s)))]
+    (format "%032x" (BigInteger. 1 raw))))
+
+(defn complicated-hash [obj & [salt]]
+  (->> (str obj)
+       (map-indexed
+        (fn [idx i] [idx i]
+          (cond (= (re-matches #"[^a-zA-z0-9]" (str i)) (str i))
+                (str i)
+                (= (re-matches #"[0-9]" (str i)) (str i))
+                ;; TODO: fix digest
+                (str (if (neg? (rem (Character/digit (first (take-last 1 (md5 (+ (- (count (str obj)) idx) (int i))))) 10) 10))
+                       (rand-int 10)
+                       (rem (Character/digit (first (take-last 1 (md5 (+ (- (count (str obj)) idx) (int i))))) 10) 10)))
+                :else
+                (subs (md5 (+ (- (count (str obj)) idx) (int i)) salt)
+                      (- (count (md5 (+ (- (count (str obj)) idx) (int i)))) 1)))))
+       str/join))
+
 (comment
   ;; Run processing in 4 threads
   (utils/run task 4)
@@ -38,4 +63,8 @@
   (utils/stop-all)
   ;; Print time report
   (utils/print-report @utils/t)
+
+  (complicated-hash "123-456-789 10")
+  
+ 
 )
